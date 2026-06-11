@@ -96,6 +96,6 @@ See [DEPLOY.md](./DEPLOY.md) for full step-by-step deployment instructions.
 ## Live
 
 - **Bot:** [@CircloBot](https://t.me/CircloBot)
-- **Dashboard:** [circlo.opsfera.xyz](https://circlo.opsfera.xyz)
+- **Dashboard:** [circlo.zndra.xyz](https://circlo.zndra.xyz/)
 - **Agent Registry:** [8004scan.io](https://8004scan.io)
 - **Built by:** [Opsfera](https://opsfera.xyz) · [@Mani_chukk](https://x.com/Mani_chukk)
