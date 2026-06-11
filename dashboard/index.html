@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Circlo — Onchain Savings Circle Dashboard</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --green: #00e897;
+    --yellow: #fcff52;
+    --red: #ff4e6a;
+    --muted: #6b7280;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .logo {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--yellow); }
+  .badge {
+    background: #1a2a1a;
+    color: var(--green);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--green);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .celo-badge {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+  .celo-dot {
+    width: 8px; height: 8px;
+    background: var(--yellow);
+    border-radius: 50%;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 2rem; }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+  .stat-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+  .stat-value { font-size: 1.8rem; font-weight: 700; }
+  .stat-value.green { color: var(--green); }
+  .stat-value.yellow { color: var(--yellow); }
+  .section-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    margin-top: 2rem;
+  }
+  .circle-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .circle-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .circle-name { font-weight: 700; font-size: 1rem; }
+  .status-pill {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .status-active { background: #0d2d1a; color: var(--green); border: 1px solid var(--green); }
+  .status-recruiting { background: #2a2a0d; color: var(--yellow); border: 1px solid var(--yellow); }
+  .status-completed { background: #1a1a2a; color: var(--muted); border: 1px solid var(--border); }
+  .circle-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .meta-item { font-size: 0.8rem; }
+  .meta-key { color: var(--muted); margin-bottom: 0.1rem; }
+  .meta-val { font-weight: 600; }
+  .progress-bar {
+    background: var(--border);
+    border-radius: 999px;
+    height: 4px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 999px;
+    transition: width 0.3s;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  th {
+    text-align: left;
+    color: var(--muted);
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  .tx-link { color: var(--green); text-decoration: none; font-family: monospace; font-size: 0.75rem; }
+  .tx-link:hover { text-decoration: underline; }
+  .empty { color: var(--muted); font-size: 0.85rem; text-align: center; padding: 2rem; }
+  footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    border-top: 1px solid var(--border);
+    margin-top: 3rem;
+  }
+  footer a { color: var(--text-dim); text-decoration: none; }
+  .loading { color: var(--muted); text-align: center; padding: 3rem; }
+  .refresh-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 0.4rem 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    margin-left: auto;
+    display: block;
+    margin-bottom: 1rem;
+  }
+  .refresh-btn:hover { border-color: var(--green); color: var(--green); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Circlo<span>.</span></div>
+  <div class="badge">Live</div>
+  <div class="celo-badge">
+    <div class="celo-dot"></div>
+    Celo Mainnet
+  </div>
+</header>
+
+<main>
+  <div id="stats" class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Active Circles</div>
+      <div class="stat-value green" id="stat-circles">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Members</div>
+      <div class="stat-value" id="stat-members">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Paid Out</div>
+      <div class="stat-value yellow" id="stat-paid">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Transactions</div>
+      <div class="stat-value" id="stat-txns">—</div>
+    </div>
+  </div>
+
+  <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+
+  <div class="section-title">Savings Circles</div>
+  <div id="circles-container"><div class="loading">Loading circles...</div></div>
+
+  <div class="section-title">Recent Payouts</div>
+  <div id="payouts-container"><div class="loading">Loading payouts...</div></div>
+
+  <div class="section-title">Recent Contributions</div>
+  <div id="contributions-container"><div class="loading">Loading contributions...</div></div>
+</main>
+
+<footer>
+  Circlo — Onchain Rotating Savings Circle Agent &nbsp;·&nbsp;
+  Built on <a href="https://celo.org" target="_blank">Celo</a> &nbsp;·&nbsp;
+  <a href="https://8004scan.io" target="_blank">8004scan</a> &nbsp;·&nbsp;
+  <a href="https://t.me/CircloBot" target="_blank">@CircloBot</a>
+</footer>
+
+<script>
+async function loadData() {
+  try {
+    const res = await fetch('/api/dashboard');
+    const data = await res.json();
+    renderDashboard(data);
+  } catch(e) {
+    document.getElementById('circles-container').innerHTML =
+      '<div class="empty">Could not load data. Make sure the API is running.</div>';
+  }
+}
+
+function renderDashboard(data) {
+  const { circles, payouts, contributions } = data;
+
+  // Stats
+  const activeCircles = circles.filter(c => c.status === 'active').length;
+  const totalMembers = data.total_members || 0;
+  const totalPaid = payouts.reduce((s, p) => s + (p.amount || 0), 0);
+  const totalTxns = data.total_transactions || 0;
+
+  document.getElementById('stat-circles').textContent = activeCircles;
+  document.getElementById('stat-members').textContent = totalMembers;
+  document.getElementById('stat-paid').textContent = totalPaid.toFixed(2) + ' cUSD';
+  document.getElementById('stat-txns').textContent = totalTxns;
+
+  // Circles
+  if (!circles.length) {
+    document.getElementById('circles-container').innerHTML =
+      '<div class="empty">No circles yet. Start one on Telegram with @CircloBot</div>';
+  } else {
+    document.getElementById('circles-container').innerHTML = circles.map(c => {
+      const pct = Math.round((c.member_count / c.max_members) * 100);
+      const statusClass = c.status === 'active' ? 'status-active' :
+                          c.status === 'recruiting' ? 'status-recruiting' : 'status-completed';
+      return `
+        <div class="circle-card">
+          <div class="circle-header">
+            <div class="circle-name">${c.name}</div>
+            <div class="status-pill ${statusClass}">${c.status}</div>
+          </div>
+          <div class="circle-meta">
+            <div class="meta-item"><div class="meta-key">Contribution</div><div class="meta-val">${c.contribution_amount} cUSD</div></div>
+            <div class="meta-item"><div class="meta-key">Members</div><div class="meta-val">${c.member_count}/${c.max_members}</div></div>
+            <div class="meta-item"><div class="meta-key">Round</div><div class="meta-val">${c.current_round}</div></div>
+            <div class="meta-item"><div class="meta-key">Cycle</div><div class="meta-val">${c.cycle_days}d</div></div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Payouts table
+  if (!payouts.length) {
+    document.getElementById('payouts-container').innerHTML =
+      '<div class="empty">No payouts yet.</div>';
+  } else {
+    document.getElementById('payouts-container').innerHTML = `
+      <table>
+        <thead><tr>
+          <th>Circle</th><th>Round</th><th>Recipient</th><th>Amount</th><th>TX</th>
+        </tr></thead>
+        <tbody>${payouts.slice(0, 20).map(p => `
+          <tr>
+            <td>${p.circle_name || '—'}</td>
+            <td>${p.round_number}</td>
+            <td>${p.username ? '@'+p.username : (p.full_name || '—')}</td>
+            <td>${parseFloat(p.amount).toFixed(2)} cUSD</td>
+            <td>${p.tx_hash ? `<a class="tx-link" href="https://celoscan.io/tx/${p.tx_hash}" target="_blank">${p.tx_hash.slice(0,10)}…</a>` : '—'}</td>
+          </tr>
+        `).join('')}</tbody>
+      </table>`;
+  }
+
+  // Contributions table
+  if (!contributions.length) {
+    document.getElementById('contributions-container').innerHTML =
+      '<div class="empty">No contributions yet.</div>';
+  } else {
+    document.getElementById('contributions-container').innerHTML = `
+      <table>
+        <thead><tr>
+          <th>Circle</th><th>Round</th><th>Member</th><th>Amount</th><th>TX</th><th>Time</th>
+        </tr></thead>
+        <tbody>${contributions.slice(0, 30).map(c => `
+          <tr>
+            <td>${c.circle_name || '—'}</td>
+            <td>${c.round_number}</td>
+            <td>${c.username ? '@'+c.username : (c.full_name || '—')}</td>
+            <td>${parseFloat(c.amount).toFixed(2)} cUSD</td>
+            <td>${c.tx_hash ? `<a class="tx-link" href="https://celoscan.io/tx/${c.tx_hash}" target="_blank">${c.tx_hash.slice(0,10)}…</a>` : '—'}</td>
+            <td>${c.contributed_at ? new Date(c.contributed_at).toLocaleDateString() : '—'}</td>
+          </tr>
+        `).join('')}</tbody>
+      </table>`;
+  }
+}
+
+loadData();
+setInterval(loadData, 30000); // auto-refresh every 30s
+</script>
+</body>
+</html>
